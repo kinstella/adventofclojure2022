@@ -5,12 +5,11 @@
 
 (def shape-points {"X" 1 ; rock
                    "Y" 2 ; paper
-                   "Z" 3 ; scissors
-                   })
+                   "Z" 3}) ; scissors
 
-(def winning-hands {"A" "Y" ; Y paper beats A rock
-                    "B" "Z" ; Z scissors beats B paper
-                    "C" "X"}) ; X rock beats C scissors 
+(def wins {"A" "Y" ; Y paper beats A rock
+           "B" "Z" ; Z scissors beats B paper
+           "C" "X"}) ; X rock beats C scissors 
 
 (def draws {"A" "X"
             "B" "Y"
@@ -21,7 +20,7 @@
              "C" "Y"}) ; C scissors
 
 (defn calc-hand [p1 p2]
-  (let [score (cond (= p2 (get winning-hands p1))
+  (let [score (cond (= p2 (get wins p1))
                     6
                     (= p2 (get draws p1))
                     3
@@ -36,8 +35,7 @@
         (= result "Y") ; draw
         (get draws p1)
         (= result "Z") ; win
-        (get winning-hands p1)))
-
+        (get wins p1)))
 
 (defn day02-part01 []
   (let [lines (split-lines input-data)]
