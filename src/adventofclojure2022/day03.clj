@@ -21,12 +21,9 @@
   (let [lines (split-lines input-data)]
     (reduce + (mapv process-line lines))))
 
-
 (defn find-badge [sacks]
   (let [[elf1 elf2 elf3] sacks
-        _ (println "e1 " elf1 " e2 " elf2 " e3 " elf3)
         badge (intersection (set elf1) (set elf2) (set elf3))]
-    (println "badge: " badge)
     (first badge)))
 
 (defn day03-part02 []
