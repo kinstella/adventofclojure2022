@@ -32,9 +32,7 @@
         badges (mapv find-badge elf-groups)]
     (reduce + (mapv score-char badges))))
 
-
 (comment
-  
-  (day03-part02)
-  
+  (day03-part01)
+  (day03-part02) 
   #_endcomment)
