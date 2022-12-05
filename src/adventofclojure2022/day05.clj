@@ -6,7 +6,6 @@
 
 (def stackatoms (atom [])) ; init for 2d array later
 
-
 (defn push-to-stack [snum el]
   (if (> (count el) 0)
     (let [newarray (conj (nth @stackatoms snum) el)]
@@ -33,7 +32,6 @@
     (swap! stackatoms conj []))
   (parse-stacks stackvec))
 
-
 (defn parse-step [step]
   (if (> (count step) 0)
     (let [justnums (-> step
@@ -44,24 +42,16 @@
           [ct fm to] (mapv #(Integer/parseInt %) (split justnums #"\s+"))]
       [ct fm to])))
 
-(defn do-step [[ct mvfrom mvto]]
-  (let [mvfrom (dec mvfrom) ; these weren't zero-indexed...
-        mvto (dec mvto)
-        taken (take-last ct (nth @stackatoms mvfrom))
-        newfrom (drop-last ct (nth @stackatoms mvfrom))]
-    (swap! stackatoms assoc mvfrom (vec newfrom))
-
-    (let [newto (into (nth @stackatoms mvto) (reverse taken))]
-      (swap! stackatoms assoc mvto (vec newto)))))
-
-(defn do-step-part-two [[ct mvfrom mvto]]
+(defn do-step [[ct mvfrom mvto] allatonce?]
   (let [mvfrom (dec mvfrom)
         mvto (dec mvto)
         taken (take-last ct (nth @stackatoms mvfrom))
         newfrom (drop-last ct (nth @stackatoms mvfrom))]
     (swap! stackatoms assoc mvfrom (vec newfrom))
 
-    (let [newto (into (nth @stackatoms mvto) taken)]
+    (let [newto (into (nth @stackatoms mvto) (if allatonce?
+                                               taken
+                                               (reverse taken)))]
       (swap! stackatoms assoc mvto (vec newto)))))
 
 (defn get-top-of-stacks []
@@ -78,7 +68,7 @@
     ; process moves...
     (let [to-process (mapv parse-step moves)]
       (doseq [m to-process]
-        (do-step m))))
+        (do-step m false))))
   (get-top-of-stacks))
 
 (defn part02 []
@@ -91,7 +81,7 @@
     ; process moves...
     (let [to-process (mapv parse-step moves)]
       (doseq [m to-process]
-        (do-step-part-two m)))
+        (do-step m true)))
     (get-top-of-stacks)))
 
 (comment
