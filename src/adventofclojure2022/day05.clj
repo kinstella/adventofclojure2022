@@ -12,7 +12,7 @@
 (defn push-to-stack [snum el]
   (if (> (count el) 0)
     (let [newarray (conj (nth @stackatoms snum) el)]
-      (swap! stackatoms assoc snum newarray))))
+      (swap! stackatoms assoc snum (vec newarray)))))
 
 (defn process-stack-line [ln]
   (let [all-stacks (re-seq #".{1,4}" ln)
@@ -38,9 +38,14 @@
       [ct fm to])))
 
 (defn do-step [[ct mvfrom mvto]]
-  (let [taken (take-last ct (nth @stackatoms mvfrom))]
-    #_(reset! stack-1 (vec (drop-last ct @stack-1)))
-    taken))
+  (let [mvfrom (dec mvfrom)
+        mvto (dec mvto)
+        taken (take-last ct (nth @stackatoms mvfrom))
+        newfrom (drop-last ct (nth @stackatoms mvfrom))]
+    (swap! stackatoms assoc mvfrom (vec newfrom))
+
+    (let [newto (into (nth @stackatoms mvto) (reverse taken))]
+      (swap! stackatoms assoc mvto (vec newto)))))
 
 (defn part01 []
   (reset! stackatoms [])
@@ -55,15 +60,16 @@
 
     ; process moves...
     (let [to-process (mapv parse-step moves)]
-      (println to-process)))
-  #_(println moves))
+      (println to-process)
+
+      (doseq [m to-process]
+        (do-step m))))
+  ; print last of each stack
+  (apply str (for [x (range 0 (count @stackatoms))]
+               (last (nth @stackatoms x)))))
 
 (comment
   (part01)
-
   @stackatoms
-
-
-
   ;
   #_endcomment)
