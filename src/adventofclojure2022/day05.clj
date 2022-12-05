@@ -47,6 +47,17 @@
     (let [newto (into (nth @stackatoms mvto) (reverse taken))]
       (swap! stackatoms assoc mvto (vec newto)))))
 
+(defn do-step-part-two [[ct mvfrom mvto]]
+  (let [mvfrom (dec mvfrom)
+        mvto (dec mvto)
+        taken (take-last ct (nth @stackatoms mvfrom))
+        newfrom (drop-last ct (nth @stackatoms mvfrom))]
+    (swap! stackatoms assoc mvfrom (vec newfrom))
+
+    (let [newto (into (nth @stackatoms mvto) taken)]
+      (swap! stackatoms assoc mvto (vec newto)))))
+
+
 (defn part01 []
   (reset! stackatoms [])
   (let [[stacks moves] (split input-data #"\n\n")
@@ -68,8 +79,34 @@
   (apply str (for [x (range 0 (count @stackatoms))]
                (last (nth @stackatoms x)))))
 
+(defn part02 []
+  (reset! stackatoms [])
+  (let [[stacks moves] (split input-data #"\n\n")
+        stackvec (split-lines stacks)
+        moves (split-lines moves)
+        stack-count (split (trim (last stackvec)) #"\s+")]
+    ; init stacks
+    (doseq [s stack-count]
+      (swap! stackatoms conj []))
+    (parse-stacks stackvec)
+
+    ; process moves...
+    (let [to-process (mapv parse-step moves)]
+      (println to-process)
+
+      (doseq [m to-process]
+        (do-step-part-two m))))
+  ; print last of each stack
+  (apply str (for [x (range 0 (count @stackatoms))]
+               (last (nth @stackatoms x)))))
+
+
 (comment
   (part01)
+  (part02)
+
   @stackatoms
   ;
+
+
   #_endcomment)
