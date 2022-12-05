@@ -6,13 +6,14 @@
 
 (def stackatoms (atom [])) ; init for 2d array later
 
-(defn unbox [crate]
-  (clojure.string/replace (trim crate) #"[\[\]]" ""))
 
 (defn push-to-stack [snum el]
   (if (> (count el) 0)
     (let [newarray (conj (nth @stackatoms snum) el)]
       (swap! stackatoms assoc snum (vec newarray)))))
+
+(defn unbox [crate]
+  (clojure.string/replace (trim crate) #"[\[\]]" ""))
 
 (defn process-stack-line [ln]
   (let [all-stacks (re-seq #".{1,4}" ln)
@@ -27,6 +28,12 @@
     (mapv process-stack-line
           (rest lines))))
 
+(defn init-stacks [stack-ct stackvec]
+  (doseq [s stack-ct]
+    (swap! stackatoms conj []))
+  (parse-stacks stackvec))
+
+
 (defn parse-step [step]
   (if (> (count step) 0)
     (let [justnums (-> step
@@ -38,7 +45,7 @@
       [ct fm to])))
 
 (defn do-step [[ct mvfrom mvto]]
-  (let [mvfrom (dec mvfrom)
+  (let [mvfrom (dec mvfrom) ; these weren't zero-indexed...
         mvto (dec mvto)
         taken (take-last ct (nth @stackatoms mvfrom))
         newfrom (drop-last ct (nth @stackatoms mvfrom))]
@@ -57,6 +64,9 @@
     (let [newto (into (nth @stackatoms mvto) taken)]
       (swap! stackatoms assoc mvto (vec newto)))))
 
+(defn get-top-of-stacks []
+  (apply str (for [x (range 0 (count @stackatoms))]
+               (last (nth @stackatoms x)))))
 
 (defn part01 []
   (reset! stackatoms [])
@@ -64,20 +74,12 @@
         stackvec (split-lines stacks)
         moves (split-lines moves)
         stack-count (split (trim (last stackvec)) #"\s+")]
-    ; init stacks
-    (doseq [s stack-count]
-      (swap! stackatoms conj []))
-    (parse-stacks stackvec)
-
+    (init-stacks stack-count stackvec)
     ; process moves...
     (let [to-process (mapv parse-step moves)]
-      (println to-process)
-
       (doseq [m to-process]
         (do-step m))))
-  ; print last of each stack
-  (apply str (for [x (range 0 (count @stackatoms))]
-               (last (nth @stackatoms x)))))
+  (get-top-of-stacks))
 
 (defn part02 []
   (reset! stackatoms [])
@@ -85,28 +87,15 @@
         stackvec (split-lines stacks)
         moves (split-lines moves)
         stack-count (split (trim (last stackvec)) #"\s+")]
-    ; init stacks
-    (doseq [s stack-count]
-      (swap! stackatoms conj []))
-    (parse-stacks stackvec)
-
+    (init-stacks stack-count stackvec)
     ; process moves...
     (let [to-process (mapv parse-step moves)]
-      (println to-process)
-
       (doseq [m to-process]
-        (do-step-part-two m))))
-  ; print last of each stack
-  (apply str (for [x (range 0 (count @stackatoms))]
-               (last (nth @stackatoms x)))))
-
+        (do-step-part-two m)))
+    (get-top-of-stacks)))
 
 (comment
   (part01)
   (part02)
-
-  @stackatoms
-  ;
-
 
   #_endcomment)
