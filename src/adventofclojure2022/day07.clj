@@ -7,6 +7,9 @@
 (def curloc (atom [])) ; our current working directory, as a stack
 (def dir-sums (atom {})) ; a map of dirs by pathname and their size
 
+(def TOTAL_DISK_SIZE 70000000)
+(def SPACE_NEEDED 30000000)
+
 (defn process-line [ln]
   (cond
     (includes? ln "$ cd ..")
@@ -51,8 +54,24 @@
                      v
                      0)) @dir-sums)))
 
+(defn part2 [givenstr]
+  (reset! curloc [])
+  (reset! filesys {})
+  (let [lines (split-lines givenstr)]
+    (mapv #(process-line %) lines))
+  ;; build dirsums atom of directories and content size...
+  (dirsize ["/"])
+  ; find the directry that's smallest, but large enough to free the space we need
+  (let [amount-needed (- SPACE_NEEDED (- TOTAL_DISK_SIZE (get @dir-sums ["/"])))]
+    (reduce (fn [closest d]
+              (let [cursize (get @dir-sums d)]
+                (if (and (> cursize amount-needed) (< cursize closest))
+                  cursize
+                  closest)))
+            TOTAL_DISK_SIZE
+            (keys @dir-sums))))
+
 (comment
-
   (part1 raw-data)
-
+  (part2 raw-data)
   #_endcomment)
