@@ -28,7 +28,6 @@
              assoc-in (conj @curloc fname) fsize))))
 
 (defn dirsize
-  "dirsizes -- a flatted map of each directory and its size "
   [curdir]
   (let [curval (get-in @filesys curdir)
         cursize (reduce (fn [totalsize k]
@@ -46,9 +45,9 @@
   (reset! filesys {})
   (let [lines (split-lines givenstr)]
     (mapv #(process-line %) lines))
-  ;; build dirsums atom of directories and content size...
+  ;; traverse filesys map to count up sizes for each dir, put in an atom of dirs and sizes
   (dirsize ["/"])
-  ;; add up everything < 100000
+  ;; sum up every directory thats < 100000
   (apply + (mapv (fn [[k v]]
                    (if (< v 100000)
                      v
@@ -61,7 +60,7 @@
     (mapv #(process-line %) lines))
   ;; build dirsums atom of directories and content size...
   (dirsize ["/"])
-  ; find the directry that's smallest, but large enough to free the space we need
+  ; find the directory that's smallest, but large enough to free the space we need
   (let [amount-needed (- SPACE_NEEDED (- TOTAL_DISK_SIZE (get @dir-sums ["/"])))]
     (reduce (fn [closest d]
               (let [cursize (get @dir-sums d)]
