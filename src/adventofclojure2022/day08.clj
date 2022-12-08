@@ -27,8 +27,60 @@
                               (for [y (range 0 (alength (aget mx 0)))]
                                 (is-visible mx x y))))))))
 
+(defn scenic-score [mx givenx giveny]
+  (let [curtree (aget mx givenx giveny)
+        maxx (alength mx)
+        maxy (alength (aget mx 0))
+        sides (conj []
+                    (loop [xv (range (dec givenx) -1 -1)
+                           ct 0]
+                      (cond (nil? (first xv))
+                            ct
+                            (>= (aget mx (first xv) giveny) curtree)
+                            (inc ct)
+                            :else
+                            (recur (rest xv) (inc ct))))
+                    (loop [xv (range (inc givenx) maxx)
+                           ct 0]
+                      (cond (nil? (first xv))
+                            ct
+                            (>= (aget mx (first xv) giveny) curtree)
+                            (inc ct)
+                            :else
+                            (recur (rest xv) (inc ct))))
+                    (loop [yv (range (dec giveny) -1 -1)
+                           ct 0]
+                      (cond  (nil? (first yv))
+                             ct
+                             (>= (aget mx givenx (first yv)) curtree)
+                             (inc ct)
+                             :else
+                             (recur (rest yv) (inc ct))))
+                    (loop [yv (range (inc giveny) maxy)
+                           ct 0]
+                      (cond (nil? (first yv))
+                            ct
+                            (>= (aget mx givenx (first yv)) curtree)
+                            (inc ct)
+                            :else
+                            (recur (rest yv) (inc ct)))))]
+    (apply * sides)))
+
+(defn part2 [givenstr]
+  (let [mx (gen-twod-array givenstr)
+        coords (apply concat (for [x (range 0 (alength mx))]
+                               (for [y (range 0 (alength (aget mx 0)))]
+                                 [x y])))]
+    (reduce (fn [mxscore [x y]]
+              (let [ss (scenic-score mx x y)]
+                (if (> ss mxscore)
+                  ss
+                  mxscore)))
+            0
+            coords)))
+
+
 (comment
-
   (part1 raw-data)
-
+  (part2 raw-data)
   #_endcomment)
