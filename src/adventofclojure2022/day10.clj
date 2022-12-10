@@ -29,7 +29,19 @@
       (apply + (mapv (fn [[c r]]
                        (* c r)) endvals)))))
 
+
+(defn part2 []
+  (let [valsatpos (into [] (conj (mapv (fn [[k v]]
+                                         v) (sort @cyclevals))))]
+    (map-indexed (fn [i v]
+                   (if (and (>= (mod i 40) (dec v))
+                            (<= (mod i 40) (inc v)))
+                     (print "#")
+                     (print "."))
+                   (if (and (> i 0) (= 0 (mod (inc i) 40)))
+                     (print "\n"))) valsatpos)))
+
 (comment
   (part1 raw-data)
-
+  (part2)
   #_endcomment)
