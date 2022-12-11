@@ -23,8 +23,7 @@
   (loop [items (get-in @mqs [mid :items])]
     (if (empty? items)
       (swap! mqs assoc-in [mid :items] [])
-      ; else
-      (do
+      (do ; else
         (swap! mqs update-in [mid :inspected] inc)
         (let [theop (get-in @mqs [mid :op])
               worry  (theop (first items))
@@ -34,7 +33,6 @@
           (let [throwto (if (= (mod worry (get-in @mqs [mid :divby])) 0)
                           (get-in @mqs [mid :true-to])
                           (get-in @mqs [mid :false-to]))]
-
         ; throw it to...
             (swap! mqs assoc-in [throwto :items] (conj (get-in @mqs [throwto :items]) worry)))
           (recur (rest items)))))))
@@ -72,10 +70,9 @@
     (mapv #(swap! mqs assoc (:id %) %) mrecs)
     (reset! lcm (get-lcm))
     (mapv
-     (fn [d]
-       (doall
-        (for [m (range 0 (count mrecs))]
-          (process-monkey m)))) (range 0 days)))
+     (fn [_]
+       (mapv #(process-monkey %) (keys @mqs)))
+     (range 0 days)))
   (mult-two-highest))
 
 (comment
