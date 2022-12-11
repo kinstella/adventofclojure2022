@@ -1,11 +1,15 @@
 (ns adventofclojure2022.day11
   (:require [clojure.string :as str :refer [split split-lines trim]]))
 
-(def raw-data (slurp "resources/data/day11/example.txt"))
+(def raw-data (slurp "resources/data/day11/input.txt"))
 
 (def mqs (atom {}))
+(def lcm (atom 0))
+(def is-part1 (atom true))
 
-(defn op-f [opstr]
+(defn op-f
+  "returns a lambda that expects one param"
+  [opstr]
   (let [[op arg] (split opstr #"\s+")]
     (if (= op "*")
       (if (= arg "old")
@@ -23,23 +27,16 @@
       (do
         (swap! mqs update-in [mid :inspected] inc)
         (let [theop (get-in @mqs [mid :op])
-              ;_ (println "item is:" (first items))
-              worry (bigint (theop (bigint (first items))))
-              _ (println "worry is now:" worry)
-              worry (quot worry 3)
-              ;_ (println "and divided by 3 is now: " worry)
-              ]
-          #_(println "is " worry " divisible by " (get-in @mqs [mid :divby]) "?:" (= 0 (mod worry (get-in @mqs [mid :divby]))))
+              worry  (theop (first items))
+              worry (if @is-part1
+                      (quot worry 3)
+                      (mod worry @lcm))]
           (let [throwto (if (= (mod worry (get-in @mqs [mid :divby])) 0)
                           (get-in @mqs [mid :true-to])
                           (get-in @mqs [mid :false-to]))]
-            ;(println "throwing to: " throwto)
 
         ; throw it to...
-            (swap! mqs assoc-in [throwto :items] (conj (get-in @mqs [throwto :items]) worry))
-            #_(println "should have added " worry " to queue for monkey " throwto " which is now: " (get-in @mqs [throwto :items])))
-
-          #_(println "rest of items is:" (rest items))
+            (swap! mqs assoc-in [throwto :items] (conj (get-in @mqs [throwto :items]) worry)))
           (recur (rest items)))))))
 
 (defn monkey-rec [monkey-data]
@@ -64,32 +61,27 @@
                                 #(get-in @mqs [% :inspected])
                                 (keys @mqs))))))
 
+(defn get-lcm []
+  (reduce * (mapv
+             #(get-in @mqs [% :divby])
+             (keys @mqs))))
+
 (defn part-1 [givendata days]
   (let [monkeys (split givendata #"\n\n")
         mrecs (mapv #(monkey-rec %) monkeys)]
-    (mapv #(swap! mqs assoc (:id %) %
-                  #_(println "-> rec" %)) mrecs)
+    (mapv #(swap! mqs assoc (:id %) %) mrecs)
+    (reset! lcm (get-lcm))
     (mapv
      (fn [d]
        (doall
         (for [m (range 0 (count mrecs))]
-          (do
-            ;(println "Monkey " m ": " (get-in @mqs [m :items]))
-            (process-monkey m))
-          #_(println "monkey:" m)))
-       #_(println "------------ Day " (inc d) "--------------\n" @mqs)) (range 0 days)))
-
+          (process-monkey m)))) (range 0 days)))
   (mult-two-highest))
 
 (comment
-  (part-1 raw-data 100)
-
-
-
-
-  raw-data
-
-  (get-in @mqs [0 :items])
-  (swap! mqs assoc-in [0 :items] [])
+  (reset! is-part1 true)
+  (part-1 raw-data 20)
+  (reset! is-part1 false)
+  (part-1 raw-data 10000)
 
   #_endcomment)
