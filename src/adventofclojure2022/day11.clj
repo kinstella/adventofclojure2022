@@ -66,7 +66,7 @@
              #(get-in @mqs [% :divby])
              (keys @mqs))))
 
-(defn part-1 [givendata days]
+(defn day11 [givendata days]
   (let [monkeys (split givendata #"\n\n")
         mrecs (mapv #(monkey-rec %) monkeys)]
     (mapv #(swap! mqs assoc (:id %) %) mrecs)
@@ -80,8 +80,8 @@
 
 (comment
   (reset! is-part1 true)
-  (part-1 raw-data 20)
+  (day11 raw-data 20)
   (reset! is-part1 false)
-  (part-1 raw-data 10000)
+  (day11 raw-data 10000)
 
   #_endcomment)
